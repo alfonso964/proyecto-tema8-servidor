@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 
-
-
 export async function POST(request) {
 
     const { email, password, fullName } = await request.json();
@@ -20,19 +18,20 @@ export async function POST(request) {
             data: {
                 email,
                 password: bcrypt.hashSync(password),
-                fullName
+                name: fullName 
             }
         });
-        const { id, isActive, roles } = user;
+        
+        const { id, isActive, role } = user; 
 
         return NextResponse.json(
-            { id, email, fullName, isActive, roles },
+            { id, email, name: user.name, isActive, role }, 
             { status: 201 }
         );
     } catch (error) {
         console.log(error);
         return NextResponse.json(
-            { error: 'User already exists' },
+            { error: 'User already exists or database error' },
             { status: 409 }
         );
     }

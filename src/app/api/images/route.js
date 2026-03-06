@@ -1,8 +1,7 @@
-// src/app/api/images/route.js
 import { v2 as cloudinary } from 'cloudinary';
-import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken"; 
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,11 +9,22 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const POST = auth(async function POST(req) {
 
-  if (!req.auth) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+export async function POST(req) {
+
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: "No autorizado - Token faltante" }, { status: 401 });
   }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return NextResponse.json({ error: "No autorizado - Token inválido" }, { status: 401 });
+  }
+ 
 
   try {
     const formData = await req.formData();
@@ -52,4 +62,4 @@ export const POST = auth(async function POST(req) {
     console.error("Error Cloudinary:", error);
     return NextResponse.json({ error: "Fallo al procesar la imagen" }, { status: 500 });
   }
-});
+}

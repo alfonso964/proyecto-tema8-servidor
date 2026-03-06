@@ -1,43 +1,60 @@
 // src/app/api/cars/route.js
-import { auth } from "@/auth"
-import prisma from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
-// GET: Público - Ver todos los coches con sus fotos
-export async function GET() {
-    try {
-        const cars = await prisma.car.findMany({
-            include: { images: true }
-        })
-        return NextResponse.json(cars)
-    } catch (error) {
-        return NextResponse.json({ error: "Error al obtener coches" }, { status: 500 })
-    }
+// GET: Listar coches (MODIFICADO para incluir imágenes)
+export async function GET(request) {
+  try {
+    const cars = await prisma.car.findMany({
+      include: {
+        images: true // Esto le dice a Prisma que traiga también las fotos asociadas
+      }
+    });
+    return NextResponse.json(cars);
+  } catch (error) {
+    return NextResponse.json({ error: "Error al obtener coches" }, { status: 500 });
+  }
 }
 
-// POST: Protegido - Solo usuarios logueados pueden añadir coches
-export const POST = auth(async function POST(req) {
-    if (!req.auth) {
-        return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-    }
+// POST: Crear un coche (Se queda igual porque ya funciona bien)
+export async function POST(request) {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return NextResponse.json({ error: "No autorizado - Falta Token" }, { status: 401 });
+  }
 
-    try {
-        const body = await req.json()
-        const { brand, model, year, price, description } = body
+  const token = authHeader.split(' ')[1];
+  let userId;
 
-        const newCar = await prisma.car.create({
-            data: {
-                brand,
-                model,
-                year: parseInt(year),
-                price: parseFloat(price),
-                description,
-                userId: req.auth.user.id 
-            }
-        })
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    userId = decoded.id; 
+  } catch (err) {
+    return NextResponse.json({ error: "Token inválido" }, { status: 401 });
+  }
 
-        return NextResponse.json(newCar, { status: 201 })
-    } catch (error) {
-        return NextResponse.json({ error: "Datos del coche inválidos" }, { status: 400 })
-    }
-})
+  try {
+    const body = await request.json();
+    const { brand, model, year, price, description } = body;
+
+    const newCar = await prisma.car.create({
+      data: {
+        brand,
+        model,
+        year: parseInt(year),
+        price: parseFloat(price),
+        description,
+        user: {
+          connect: { id: userId }
+        }
+      }
+    });
+
+    return NextResponse.json(newCar, { status: 201 });
+
+  } catch (error) {
+    console.error("Error al crear coche:", error);
+    return NextResponse.json({ error: "Error al crear el coche en la base de datos" }, { status: 500 });
+  }
+}

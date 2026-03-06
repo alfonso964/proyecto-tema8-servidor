@@ -1,6 +1,6 @@
 openapi: 3.1.1
 info:
-  title: "Shop API Documentation"
+  title: "Cars API Documentation"
   description: |
     # A modern REST API built with Next.js
 
@@ -11,11 +11,11 @@ info:
     - Login de usuarios
     - Verificar estado de autenticación
 
-    ## **Productos**
-    - Crear productos
-    - Consultar productos
-    - Actualizar productos
-    - Eliminar productos
+    ## **Coches (Cars)**
+    - Crear coches
+    - Consultar coches
+    - Actualizar coches
+    - Eliminar coches
     
     ## **Imágenes**
     - Subir imágenes en cualquier formato (`image/*`)
@@ -24,9 +24,9 @@ info:
     - Eliminar imágenes subidas
 
     > **NOTA:**
-    > Las siguientes propiedades deben tener **valores únicos**: `title` y `slug` de un producto, así como el `email` de un usuario.
+    > Las siguientes propiedades deben tener **valores únicos**: `brand` y `model` de un coche, así como el `email` de un usuario.
     >
-    > - Si al introducir o modificar un producto obtienes un **código 409**, es porque ya existe un producto con el mismo `title` o `slug`.
+    > - Si al introducir o modificar un coche obtienes un **código 409**, es porque ya existe un coche con el mismo `brand` o `model`.
     > - Si al registrar un usuario obtienes un **código 409**, es porque ya existe un usuario con el mismo `email`.
 
     Para más información, visita [nuestro repositorio](https://github.com/jamj2000/nxapi-shop).
@@ -71,144 +71,101 @@ components:
           description: The password for this user
           nullable: false
 
-    Product:
+    Car:
       type: object
       required:
         - id
-        - title
+        - brand
+        - model
+        - year
         - price
         - description
-        - slug
-        - stock
-        - sizes
-        - gender
-        - tags
         - images
       properties:
         id:
           type: string
-          description: Product ID
+          description: Car ID
           uniqueItems: true
-          example: cd533345-f1f3-48c9-a62e-7dc2da50c8f8
-        title:
+          example: 1
+        brand:
           type: string
-          description: Product Title
+          description: Car Brand
           uniqueItems: true
-          example: T-Shirt Teslo
+          example: Tesla
         price:
           type: number
-          description: Product price
-          example: 0
+          description: Car price
+          example: 45000
         description:
           type: string
-          description: Product description
+          description: Car description
           default: null
-          example: Anim reprehenderit nulla in anim mollit minim irure commodo.
-        slug:
+          example: Coche eléctrico en perfecto estado.
+        model:
           type: string
-          description: Product SLUG - for SEO
+          description: Car Model
           uniqueItems: true
-          example: t_shirt_teslo
-        stock:
+          example: model_3
+        year:
           type: number
-          description: Product stock
-          default: 0
-          example: 10
-        sizes:
-          type: array
-          description: Product sizes
-          items:
-            type: string
-          example:
-            - M
-            - XL
-            - XXL
-        gender:
-          type: string
-          description: Product gender
-          example: women
-        tags:
-          type: array
-          items:
-            type: string
+          description: Car year
+          default: 2024
+          example: 2024
         images:
           type: array
           items:
             type: string
 
-    ProductCreate:
+    CarCreate:
       type: object
       required:
-        - title
+        - brand
         - price
         - description
-        - slug
-        - stock
-        - sizes
-        - gender
-        - tags
+        - model
+        - year
         - images
       properties:
-        title:
+        brand:
           type: string
-          description: Product title (unique)
+          description: Car brand (unique)
           nullable: false
           minLength: 1
         price:
           type: number
         description:
           type: string
-        slug:
+        model:
           type: string
-          description: Product slug (unique)
+          description: Car model (unique)
           nullable: false
           minLength: 1
-        stock:
+        year:
           type: number
-        sizes:
-          type: array
-          items:
-            type: string
-        gender:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
         images:
           type: array
           items:
             type: string
 
-    ProductUpdate:
+    CarUpdate:
       type: object
       properties:
-        title:
+        brand:
           type: string
-          description: Product title (unique)
+          description: Car brand (unique)
           nullable: false
           minLength: 1
         price:
           type: number
         description:
           type: string
-        slug:
+        model:
           type: string
-          description: Product slug (unique)
+          description: Car model (unique)
           nullable: false
           minLength: 1
-        stock:
+        year:
           type: number
-        sizes:
-          type: array
-          items:
-            type: string
-        gender:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
         images:
           type: array
           items:
@@ -254,13 +211,13 @@ components:
           type: string
           nullable: false
           description: The folder where the image is stored
-          example: shop
+          example: escuela_coches
         secure_url:
           type: string
           format: uri
           nullable: false
           description: The secure URL of the image
-          example: https://res.cloudinary.com/jamunoz/image/upload/v1768483589/8528839-00-A_2_sbeihu.webp
+          example: https://res.cloudinary.com/demo/image/upload/v1/coche.webp
 
 paths:
 
@@ -319,11 +276,11 @@ paths:
         "404":
           description: User not found
 
-  /api/products:
+  /api/cars:
     post:
-      summary: Create new product
+      summary: Create new car
       tags:
-        - Products
+        - Cars
       security:
         - bearerAuth: []
       requestBody:
@@ -331,25 +288,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductCreate"
+              $ref: "#/components/schemas/CarCreate"
       responses:
         "201":
-          description: Product was created
+          description: Car was created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Car"
         "400":
           description: Missing data
         "401":
           description: Unauthorized. Token expired or invalid.
         "409":
-          description: Product title or slug already exists
+          description: Car brand or model already exists
 
     get:
-      summary: List products
+      summary: List cars
       tags:
-        - Products
+        - Cars
       parameters:
         - name: limit
           in: query
@@ -367,15 +324,15 @@ paths:
             default: 0
       responses:
         "200":
-          description: Product list
+          description: Car list
         "500":
           description: Internal server error
 
-  /api/products/all/{term}:
+  /api/cars/all/{term}:
     get:
-      summary: Search products
+      summary: Search cars
       tags:
-        - Products
+        - Cars
       parameters:
         - name: term
           in: path
@@ -388,32 +345,31 @@ paths:
         "500":
           description: Internal server error
 
-  /api/products/{idOrSlug}:
+  /api/cars/{id}:
     get:
-      summary: Find product by ID or slug
+      summary: Find car by ID
       tags:
-        - Products
+        - Cars
       parameters:
-        - name: idOrSlug
+        - name: id
           in: path
           required: true
           schema:
             type: string
       responses:
         "200":
-          description: Product found
+          description: Car found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Car"
         "500":
           description: Internal server error
 
-  /api/products/{id}:
     patch:
-      summary: Update product
+      summary: Update car
       tags:
-        - Products
+        - Cars
       security:
         - bearerAuth: []
       parameters:
@@ -427,22 +383,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProductUpdate"
+              $ref: "#/components/schemas/CarUpdate"
       responses:
         "200":
-          description: Product updated successfully
+          description: Car updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Car"
         "401":
           description: Unauthorized. Token expired or invalid.
         "409":
-          description: Product title or slug already exists
+          description: Car brand or model already exists
     delete:
-      summary: Delete product
+      summary: Delete car
       tags:
-        - Products
+        - Cars
       security:
         - bearerAuth: []
       parameters:
@@ -453,19 +409,19 @@ paths:
             type: string
       responses:
         "200":
-          description: Product deleted successfully
+          description: Car deleted successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/Car"
         "401":
           description: Unauthorized. Token expired or invalid.
         "500":
           description: Internal server error
 
-  /api/files/product:
+  /api/images:
     post:
-      summary: Upload product image
+      summary: Upload car image
       tags:
         - Files - Get and Upload
       security:
@@ -473,20 +429,15 @@ paths:
       requestBody:
         required: true
         content:
-          image/*:   # Cualquier imagen
+          multipart/form-data:
             schema:
-              type: string
-              format: binary
-              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
-        # content:
-        #   multipart/form-data:
-        #     schema:
-        #       type: object
-        #       properties:
-        #         file:
-        #           type: string
-        #           format: binary
-        #           description: Image file (any image/*)
+              type: object
+              properties:
+                carId:
+                  type: integer
+                file:
+                  type: string
+                  format: binary
       responses:
         "201":
           description: Uploaded
@@ -516,9 +467,9 @@ paths:
         "500":
           description: Internal server error  
 
-  /api/files/product/{imageName}:
+  /api/images/{imageName}:
     get:
-      summary: Get product image
+      summary: Get car image
       tags:
         - Files - Get and Upload
       parameters:
@@ -530,45 +481,10 @@ paths:
       responses:
         "200":
           description: OK
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: "#/components/schemas/ImageInfo"
         "404":
           description: Image not found
-    put:
-      summary: Change product image
-      tags:
-        - Files - Get and Upload
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: imageName
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          image/*:   # Cualquier imagen
-            schema:
-              type: string
-              format: binary
-              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
-      responses:
-        "201":
-          description: Image updated or created successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImageInfo"
-        "401":
-          description: Unauthorized. Token expired or invalid.
-        "500":
-          description: Internal server error              
     delete:
-      summary: Delete product image
+      summary: Delete car image
       tags:
         - Files - Get and Upload
       security:
@@ -585,4 +501,4 @@ paths:
         "401":
           description: Unauthorized. Token expired or invalid.
         "500":
-          description: Internal server error             
+          description: Internal server error
