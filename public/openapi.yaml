@@ -328,22 +328,6 @@ paths:
         "500":
           description: Internal server error
 
-  /api/cars/all/{term}:
-    get:
-      summary: Search cars
-      tags:
-        - Cars
-      parameters:
-        - name: term
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Search results
-        "500":
-          description: Internal server error
 
   /api/cars/{id}:
     get:
