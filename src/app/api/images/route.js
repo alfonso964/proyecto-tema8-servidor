@@ -63,3 +63,12 @@ export async function POST(req) {
     return NextResponse.json({ error: "Fallo al procesar la imagen" }, { status: 500 });
   }
 }
+
+export async function GET(req) {
+  try {
+    const images = await prisma.carImage.findMany(); // O el query que necesites
+    return NextResponse.json(images, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: "Error al obtener imágenes" }, { status: 500 });
+  }
+}
