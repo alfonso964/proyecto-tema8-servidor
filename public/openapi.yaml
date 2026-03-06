@@ -19,9 +19,8 @@ info:
     
     ## **Imágenes**
     - Subir imágenes en cualquier formato (`image/*`)
-    - Consultar imágenes subidas y sus metadatos
-    - Actualizar imágenes subidas
-    - Eliminar imágenes subidas
+    - Consultar imágenes por ID de coche
+    - Eliminar imágenes por ID de imagen
 
     > **NOTA:**
     > Las siguientes propiedades deben tener **valores únicos**: `brand` y `model` de un coche, así como el `email` de un usuario.
@@ -220,7 +219,6 @@ components:
           example: https://res.cloudinary.com/demo/image/upload/v1/coche.webp
 
 paths:
-
   /api/auth/register:
     post:
       summary: Register
@@ -328,7 +326,6 @@ paths:
         "500":
           description: Internal server error
 
-
   /api/cars/{id}:
     get:
       summary: Find car by ID
@@ -430,59 +427,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/ImageInfo"
         "401":
-          description: Unauthorized. Token expired or invalid.
+          description: Unauthorized
         "500":
           description: Internal server error
-    get:
-      summary: List images
-      tags:
-        - Files - Get and Upload
-      parameters:
-        - name: limit
-          in: query
-          required: true
-          description: How many rows do you need
-          schema:
-            type: number
-            default: 10
-      responses:
-        "200":
-          description: OK
-        "500":
-          description: Internal server error  
 
-  /api/images/{imageName}:
+  /api/images/{carId}:
     get:
-      summary: Get car image
+      summary: Get all images for a car
       tags:
         - Files - Get and Upload
       parameters:
-        - name: imageName
+        - name: carId
           in: path
           required: true
           schema:
-            type: string
+            type: integer
       responses:
         "200":
-          description: OK
+          description: Images found
         "404":
-          description: Image not found
+          description: No images found for this car
+
+  /api/images/delete/{imageId}:
     delete:
-      summary: Delete car image
+      summary: Delete car image by ID
       tags:
         - Files - Get and Upload
       security:
         - bearerAuth: []
       parameters:
-        - name: imageName
+        - name: imageId
           in: path
           required: true
           schema:
-            type: string   
+            type: integer
       responses:
         "200":
           description: Image deleted successfully
         "401":
-          description: Unauthorized. Token expired or invalid.
+          description: Unauthorized
+        "404":
+          description: Image not found
         "500":
           description: Internal server error
