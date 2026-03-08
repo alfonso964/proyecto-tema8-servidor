@@ -10,17 +10,23 @@ cloudinary.config({
 });
 
 export async function DELETE(request, { params }) {
+    // 1. Extraer params correctamente (CON AWAIT)
+    const { imageId } = await params; 
+
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
+    
     const token = authHeader.split(' ')[1];
-    try { jwt.verify(token, process.env.JWT_SECRET); } 
-    catch (err) { return NextResponse.json({ error: "Token inválido" }, { status: 401 }); }
-
-    const { imageId } = params;
+    try { 
+        jwt.verify(token, process.env.JWT_SECRET); 
+    } catch (err) { 
+        return NextResponse.json({ error: "Token inválido" }, { status: 401 }); 
+    }
 
     try {
+        // 2. Buscar la imagen en la DB
         const image = await prisma.carImage.findUnique({
             where: { id: parseInt(imageId) }
         });
